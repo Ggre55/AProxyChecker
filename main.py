@@ -4,10 +4,9 @@ from concurrent.futures import ThreadPoolExecutor
 import time
 import os
 
-
 console = Console()
 proxies = []
-def check_proxy(site, proxy):
+def check_proxy(site, proxy, alPr, file):
     try:
         
         start = time.time()
@@ -15,14 +14,14 @@ def check_proxy(site, proxy):
                 site,
                 proxies={
                     "http": f"http://{proxy}",
-                    "https": f"https://{proxy}",
+                    "https": f"http://{proxy}",
                 },
             )
         end = time.time()
         if r.status_code == 200:
             console.print(f"[bold green]-----------:[Success] Proxy {proxy} is working. Latency: {end - start}seconds[/bold green]")
-            with open("valid.txt", "a+") as f:
-                f.write(proxy + "\n")
+            if proxy not in alPr:
+                file.write(proxy + "\n")
         else:
             console.print(f"[bold ]-----------:[Error] Proxy {proxy}, is not working. Response code: {r.status_code}[/bold]")
     except Exception as e:
@@ -30,6 +29,10 @@ def check_proxy(site, proxy):
 
 
 def chk_proxy(site):
+    alPr = []
+    with open("valid.txt", "r+") as f:
+        alPr = f.readlines()
+    f.close()
     file_name = "proxies.txt"
     file_path = os.path.join(file_name)
     if os.path.isfile(file_path):
@@ -39,10 +42,12 @@ def chk_proxy(site):
         print(f"Error: The file {file_path} does not exist.")
     console.print(f"[bold ]-----------:Found '{len(proxies)}' Proxies.[/bold]")
     console.print(f"[bold ]-----------:Cheking '{len(proxies)}' Proxies.[/bold]")
+    file = open("valid.txt", "a+")
     with ThreadPoolExecutor(max_workers=50) as executor:
-        results = [executor.submit(check_proxy, site, proxy) for proxy in proxies]
+        results = [executor.submit(check_proxy, site, proxy, alPr, file) for proxy in proxies]
 
 
 
 it = input("Entre Valid URL :$")
 chk_proxy(it)
+
