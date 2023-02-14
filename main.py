@@ -6,6 +6,21 @@ import os
 
 console = Console()
 proxies = []
+
+def check_reliability(proxy, website):
+    reliability = 0
+    for i in range(5):
+        try:
+            r = requests.get(website, proxies={"http": proxy, "https": proxy}, timeout=5)
+            if r.status_code == 200:
+                reliability += 1
+                
+        except Exception as e:
+            print(e)
+            continue
+    return reliability / 5
+
+    
 def check_proxy(site, proxy, alPr, file):
     try:
         
@@ -19,11 +34,13 @@ def check_proxy(site, proxy, alPr, file):
             )
         end = time.time()
         if r.status_code == 200:
-            console.print(f"[bold green]-----------:[Success] Proxy {proxy} is working. Latency: {end - start}seconds[/bold green]")
             if proxy not in alPr:
                 file.write(proxy + "\n")
+            reliability = check_reliability(proxy, site)
+            console.print(f"[bold green]-----------:[Success] Proxy {proxy} is working. Latency: {(end - start)}seconds. reliability: {reliability}/5[/bold green]")
+
         else:
-            console.print(f"[bold ]-----------:[Error] Proxy {proxy}, is not working. Response code: {r.status_code}[/bold]")
+            console.print(f"[bold ]-----------:[Error] Proxy {proxy}, is not working.[/bold]")
     except Exception as e:
         console.print(f"[bold ]-----------:[Error] Proxy {proxy} is not working.[/bold]")
 
