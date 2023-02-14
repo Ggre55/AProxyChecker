@@ -15,7 +15,7 @@ def check_proxy(site, proxy):
                 site,
                 proxies={
                     "http": f"http://{proxy}",
-                    "https": f"http://{proxy}",
+                    "https": f"https://{proxy}",
                 },
             )
         end = time.time()
